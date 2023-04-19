@@ -2,32 +2,154 @@ openapi: 3.0.0
 info:
   title: Clynxx APIs 2.0
   description: Version 2 of the Clynxx APIs uses primarily the POST method
-  version: 2.00
+  version: 2.0
 servers:
   - url: https://clynxx.uk/index.php/apiv2/
     description: Clynxx URL
 
 components:
-  responses:
-    example:
-      content:
-        application/json:
-          type: object
-          properties:
-            response_code:
-              type: integer
-            messages:
-              type: string
-            data:
-              type: string
+  schemas:
+    Patient:
+      type: object
+      properties:
+        chamber_token: 
+          type: string
+        first_name:
+          type: string
+        last_name: 
+          type: string
+        dob:
+          type: string
+        gender: 
+          type: string
+        address_line_1: 
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        post_code:
+          type: string
+        phone:
+          type: string
+        patient_email:
+          type: string
+        chamber_patient_id:
+          type: string
+        country_code:
+          type: string
+      required:
+        - first_name
+        - last_name
+        - dob
+        - gender
+        - address_line_1
+        - city
+        - country
+        - post_code
+        - phone
+        - patient_email
+        - chamber_patient_id
+        - country_code
+    Medicine:
+      type: object
+      properties:
+        id: 
+          type: string
+        name:
+          type: string
+        size: 
+          type: string
+        price:
+          type: string
+    PrescriptionStatus:
+      type: object
+      properties:
+        id: 
+          type: integer
+        paid:
+          type: integer
+        dispensed: 
+          type: integer
+    Delivery:
+      type: object
+      properties:
+        id: 
+          type: integer
+        name:
+          type: string
+        price: 
+          type: string
+    Pharmacy:
+      type: object
+      properties:
+        id: 
+          type: integer
+        miles:
+          type: number
+        name: 
+          type: string
+        mon_fri:
+          type: string
+        saturday:
+          type: string
+        sunday: 
+          type: string
+        del_coll:
+          type: string
+    Prescription:
+      type: object
+      properties:
+        email: 
+          type: string
+        token:
+          type: string
+        chamber_token: 
+          type: string
+        patient_id:
+          type: integer
+        delivery_id:
+          type: integer
+        pharmacy_id: 
+          type: integer
+        medicines:
+          type: array
+          $ref: '#/components/schemas/Medicine'
+        custom_fee:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              fee:
+                type: integer
+        is_paid:
+          type: integer
+        diagnosis:
+          type: string
 
 paths:
   /sendCode:
     post:
       summary: This API will send the code as per user choice either to the email or phone.
+      description: "The field “method” tells the API whether to send code via email or phone. Its value can be: <br> 0 => email & SMS <br> 1 => phone <br> 2 => email"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                method:
+                  type: integer
+            example:
+                email: some@example.com
+                method: 1
       responses:
         200:
-          description: OK
+          description: If successful
           content:
             application/json:
               schema:
@@ -36,32 +158,477 @@ paths:
                   response_code:
                     type: integer
                   messages:
-                    type: string
+                    type: array
+                    items:
+                      type: string
                   data:
                     type: string
-        400:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: string
-                  data:
-                    type: string  
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data: null
 
-  /users:
-    get:
-      summary: Returns a list of users.
-      description: Optional extended description in CommonMark or HTML.
-      responses:
-        '200':    # status code
-          description: A JSON array of user names
+        500:
+          description: If failed
           content:
             application/json:
-              schema: 
-                type: array
-                items: 
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                          type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
+
+  /challengeCode:
+    post:
+      summary: This API receive the code and verify whether it is correct or wrong. If correct then API will send a token in response which user will need to store. As this token and email will be required for every next API that user will request.
+      description: This API receive the code and verify whether it is correct or wrong. If correct then API will send a token in response which user will need to store. As this token and email will be required for every next API that user will request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
                   type: string
+                code:
+                  type: integer
+            example:
+                email: some@example.com
+                method: 534234
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data:
+                  token: 7KCiUkSLMh3b8sJwAzcf
+
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                          type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
+
+  /addPatient:
+    post:
+      summary: This API will get the required details for a patient and add that patient.In inputs post_code is used as country code.
+      description: This API will get the required details for a patient and add that patient.In inputs post_code is used as country code.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Patient'
+            example:
+                chamber_token: GUnNboXWfuBKhla4Yd63
+                first_name: Andy
+                last_name: Test
+                dob: 1993-01-01
+                gender: male
+                address_line_1: some address
+                city: city name
+                country: country name
+                post_code: UK 4535
+                phone: 0783242342
+                patient_email: someemail@abc.com
+                chamber_patient_id: Jelly007
+                country_code: 44
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                          type: string
+                  data:
+                    type: object
+                    properties:
+                      patient_id:
+                        type: integer
+                      chamber_patient_id:
+                        type: string
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data:
+                  patient_id: 4
+                  chamber_patient_id: Jelly007
+
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                          type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
+
+  /getMedicines:
+    post:
+      summary: This API will return the list of medicines. Page fields will be required so that the API does not take much time for loading medicines. Name field is optional. If we want to find a specific medicine we can send the name field.
+      description: This API will return the list of medicines. Page fields will be required so that the API does not take much time for loading medicines. Name field is optional. If we want to find a specific medicine we can send the name field.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+                name: paracetamol
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: object
+                    properties:
+                      medicines:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Medicine'
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data:
+                  medicines:
+                    - id: 1223
+                      name: Zyloric Tab 300Mg
+                      size: 50 ml
+                      price: 14.33
+                    - id: 6434
+                      name: Zyvox Tab 300Mg
+                      size: 10 ml
+                      price: 45.33
+
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
+
+  /getPrescriptionStatus:
+    post:
+      summary: This API will return the payment and dispense status of the prescription .If is_paid is one prescription is paid if dispensed is 1 prescription is dispensed of 0 prescription is not paid and not dispensed. Example URL above is if token ID is ABCD12345
+      description: This API will return the payment and dispense status of the prescription .If is_paid is one prescription is paid if dispensed is 1 prescription is dispensed of 0 prescription is not paid and not dispensed. Example URL above is if token ID is ABCD12345
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token_id:
+                  type: string
+            example:
+                token_id: URNKVWTDDV
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: object
+                    properties:
+                      prescription:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PrescriptionStatus'
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data:
+                  prescription:
+                    - id: 9
+                      paid: 1
+                      dispensed: 0
+
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
+
+  /getDeliveries:
+    post:
+      summary: This API will return the list of deliveries available in clynxx.In get method we will send chamber token for which we need deliveries.
+      description: This API will return the list of deliveries available in clynxx.In get method we will send chamber token for which we need deliveries.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+            example:
+                token: hBRbTVg5sfCWuFtvEjDr
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: object
+                    properties:
+                      deliveries:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Delivery'
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data:
+                  prescription:
+                    - id: 12
+                      name: Standard $3 (UK & EU 48 - 72 hours)
+                      price: 3
+                    - id: 16
+                      name: Next Day $8 (UK & EU 24- 48hours)
+                      price: 8
+
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
+
+  /getCloserPharmacies:
+    post:
+      summary: This API will return the 3 closer pharmacies to select for the patient.
+      description: This API will return the 3 closer pharmacies to select for the patient.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                postal_code:
+                  type: string
+                delivery_id:
+                  type: integer
+            example:
+                postal_code: ST3 5UE
+                delivery_id: 1
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: object
+                    properties:
+                      pharmacies:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Pharmacy'
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data:
+                  pharmacies:
+                    - id: 12
+                      miles: 2.123
+                      name: Day Lewis Pharmacy
+                      mon_fri: 09:00 18:30
+                      saturday: 09:00 18:30
+                      sunday: Closed
+                      del_coll: Delivery only
+
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
+
+  /createPrescription:
+    post:
+      summary: This API will create the prescription and and electronic signature is applied
+      description: 1. This API has all the input parameters that are used in getGrandTotal API with addition parameters which are is_paid, diagnosis. <br> 2. Here medicines input also required “dosage” inside every object along with medicine_id & packs. <br> 3. RxTransmission value can be either 1 or 2 indicating the following types. <br> 1 = Direct to pharmacy 2= FreeRx
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Prescription'
+            example:
+              email: some@example.com
+              token: 7KCiUkSLMh3b8sJwAzcf
+              chamber_token: GUnNboXWfuBKhla4Yd63
+              patient_id: 4
+              delivery_id: 3
+              pharmacy_id: 8
+              medicines:
+                - medicine_id: 43
+                  dosage: dosage instructions here
+                  packs: 2
+                  qty: 10
+              custom_fee:
+                - name: test 1
+                  fee: 20
+              is_paid: 0
+              diagnosis: dosage instruction
