@@ -1,0 +1,67 @@
+openapi: 3.0.0
+info:
+  title: Clynxx APIs 2.0
+  description: Version 2 of the Clynxx APIs uses primarily the POST method
+  version: 2.00
+servers:
+  - url: https://clynxx.uk/index.php/apiv2/
+    description: Clynxx URL
+
+components:
+  responses:
+    example:
+      content:
+        application/json:
+          type: object
+          properties:
+            response_code:
+              type: integer
+            messages:
+              type: string
+            data:
+              type: string
+
+paths:
+  /sendCode:
+    post:
+      summary: This API will send the code as per user choice either to the email or phone.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: string
+                  data:
+                    type: string
+        400:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: string
+                  data:
+                    type: string  
+
+  /users:
+    get:
+      summary: Returns a list of users.
+      description: Optional extended description in CommonMark or HTML.
+      responses:
+        '200':    # status code
+          description: A JSON array of user names
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: string

@@ -1,0 +1,188 @@
+openapi: 3.0.0
+info:
+
+  # API version
+  version: 1.0.0
+
+  # API Server endpoints title
+  title: Cryptosystem API Specifications
+
+  # API Server endpoints description
+  description: APIs used to manage components of the cryptosystem
+
+  # Contact Information
+  contact:
+    name: Contact the Support
+    email: support@example.com
+
+  # Link to an external doc for more information
+  externalDocs:
+    description: Find out more
+    url: http://example.com
+
+# All possible servers, there could be multiple servers to test the same API
+servers:
+
+  # V2 of the API server that supports http, https and also mutiple environments
+  - url: '{protocol}://{environment}.example.cryptosystem.com/api/v2'
+    description: Cryptosystem example API server v2
+    variables:
+
+      # Multiple protcols for V2
+      protocol:
+          default: https
+          enum:
+            - http
+            - https       # Secure server
+
+      # Multiple environments for V2
+      environment:
+          default: api    # Production server
+          enum:
+            - api         # Production server
+            - api.dev     # Development server
+            - api.staging # Staging server
+
+  # V1 of the API server that supports only one possible URL
+  - url: https://api.example.cryptosystem.com/api/v1
+    description: Cryptosystem example API server v1
+
+# Objects that can be resused for all the APIs in the file
+components:
+
+  # Possible error responses models from the API that can reused for all APIs
+  responses:
+    NotFound:
+      description: The server can not find the requested resource, meaning that the endpoint is valid but the resource itself does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            description: A structured value specifying the code and description of the error that occurred.
+    Invalid:
+      description: Bad Request, The specified parameter(s) is(are) invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            description: A structured value specifying the code and description of the error that occurred.
+
+  # Objects models that can be reused throughout the file for all APIs
+  schemas:
+
+    # Wallet model
+    wallet:
+      type: object
+      properties:
+        approvalsRequired:
+          type: integer
+          format: int64
+          minimum: 1
+        coin:
+          type: string
+          description: A crytocurrency or token ticker symbol
+        deleted:
+          type: boolean
+        disableTransactionNotifications:
+          type: boolean
+        id:
+          type: string
+          pattern: '^[0-9a-f](32)$'
+          example: 59cd72485007a239fb00282ed480da1f
+        label:
+          type: string
+      required:  
+        - approvalsRequired
+        - coin
+        - deleted
+        - disableTransactionNotifications
+        - id
+        - label
+
+    # Error model
+    Error:
+        type: object
+        properties:
+          code:
+            type: string
+            description: A number that indicates the error type that occurred.
+          message:
+            type: string
+            description: A descriptive message explaining the cause of error.
+        required:
+          - code
+          - message
+
+# All APIs implemented in the servers
+paths:
+
+  # A definition of a end point, where coin and walletId are specified in the path 
+  /{coin}/wallet/{walletId}:
+
+    # GET operation to retrieve a wallet 
+    get:
+
+      # Tags used for logical grouping of operations, groups all wallet operations
+      tags:
+        - Wallet
+
+      # A verbose explanation of the API GET operation
+      description: Get one wallet by its coin and walletId. One walletId can map to multiple receive addresses.
+
+      # A short summary of what the operation does.
+      summary: Get a wallet by its coin and walletId.
+
+      # Unique string used to identify the operation.
+      operationId: getWalletByCoinAndWalletId
+
+      # A list of parameters that are applicable, both path query parameters are mentioned
+      parameters:
+
+        # Paramter coin mentioned in the path
+        - name: coin
+          in: path
+          required: true
+          description: A crytocurrency or token ticker symbol
+          schema:
+            type: string
+          example: btc
+
+        # Paramter walletId mentioned in the path
+        - name: walletId
+          in: path
+          required: true
+          description: WalledId to map addresses.
+          schema:
+            type: string
+            pattern: '^[0-9a-f](32)$'
+          example: 59cd72485007a239fb00282ed480da1f
+
+        # Paramter allTokens mentioned in the path, but as query
+        - name: allTokens
+          in: query
+          required: false
+          description: Include data for all subtokens (i.e. ERC20 Tokens, Stellar Tokens)
+          schema:
+            type: boolean
+          example: true
+
+      # The list of possible responses as they are returned from executing this operation.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/wallet'
+        400:
+          description: The specified coin/walledId is/are invalid
+          $ref: '#/components/responses/Invalid'   
+        404:
+          description: Corresponding wallet not found
+          $ref: '#/components/responses/NotFound'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
