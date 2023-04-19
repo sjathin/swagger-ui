@@ -1,0 +1,1854 @@
+openapi: 3.0.0
+
+info:
+  version: 1.0.0
+  title: Workplan backend API Specifications
+  description: APIs used to manage components of the Backend for workplan
+  contact:
+    name: Contact the Support
+    email: support@workplan.com
+
+externalDocs:
+  description: Find out more about Workplan
+  url: http://workplan.com
+
+
+servers:
+
+  - url: 'http://localhost:{port}'
+    description: Localhost server
+    variables:
+      port:
+        default: "8888"
+        enum:
+          - "8888"
+
+  - url: '{protocol}://{environment}.com/'
+    description: Workplan API server
+    variables:
+
+      protocol:
+        default: http
+        enum:
+          - http
+          - https      
+
+      environment:
+        default: localhost    
+        enum:
+          - workplan         
+          - workplan.dev     
+          - workplan.staging 
+
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  responses:
+    NotFound:
+      description: The server can not find the requested resource, meaning that the endpoint is valid but the resource itself does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            description: A structured value specifying the code and description of the error that occurred.
+          example:
+            code: 404
+            message: Not Found
+    Invalid:
+      description: Bad Request, The specified parameter(s) is(are) invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            description: A structured value specifying the code and description of the error that occurred.
+          example:
+            code: 400
+            message: Bad Request
+    Unauthorized:
+      description: Authentication information is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            description: A structured value specifying the code and description of the error that occurred.
+          example:
+            code: 401
+            message: Unauthorized
+    Forbidden:
+      description: Access to the requested resource is forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+            description: A structured value specifying the code and description of the error that occurred.
+          example:
+            code: 403
+            message: Forbidden
+
+  schemas:
+
+    ActivityType:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+
+    Program:
+      type: object
+      properties:  
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+
+    EntityDto:
+      type: object
+      properties:  
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        users: 
+          type: array
+          items:
+            type: string
+      required:
+        - name
+
+    EntityUser:
+      type: object
+      properties:
+        entity:
+          $ref: '#/components/schemas/Program'
+        user:
+          $ref: '#/components/schemas/User'
+
+    UserLevel:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        associated:
+          type: boolean
+
+    Frequency:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+        userLevel:
+          type: number
+        comment:
+          type: string
+        status:
+          type: number
+
+    Status:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+
+    MonthClosureDto:
+      type: object
+      properties:  
+        entityId:
+          type: number
+        period:
+          type: string
+        level:
+          type: number
+        closed:
+          type: boolean
+      
+    
+    UpdateModel:
+      type: object
+      properties:
+        id:
+          type: string
+        activityId:
+          type: string
+        planned:
+          type: boolean
+        kpi:
+          type: string
+        kpiStatus:
+          type: number
+        status:
+          $ref: '#/components/schemas/Status'
+        date:
+          type: string
+        reviews:
+          $ref: '#/components/schemas/Review'
+        milestone:
+          type: string
+        activity:
+          $ref: '#/components/schemas/EntityActivity'
+
+    TempUpdate:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+        planned:
+          type: boolean
+        status:
+          $ref: '#/components/schemas/Status'
+        milestone:
+          type: string
+        reviews:
+          $ref: '#/components/schemas/Review'
+
+    Updates:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        kpi:
+          type: string
+        kpiStatus:
+          type: number
+        date:
+          type: string
+        planned:
+          type: boolean
+        milestone:
+          type: string
+        activity:
+          $ref: '#/components/schemas/EntityActivity'
+        status:
+          $ref: '#/components/schemas/Status'
+        reviews:
+          $ref: '#/components/schemas/Review'
+        
+
+    ActivityModel:
+      type: object
+      properties:
+        id: 
+          type: string
+        plannedUpdates:
+          type: array
+          items:
+            type: string
+        userIds: 
+          type: string
+        activityTypeId:
+          type: number
+        entityId: 
+          type: number
+        frequency: 
+          type: string
+        deliverable:
+          type: string
+        description:
+          type: string
+        evidenceInteraction:
+          type: string
+        evidenceControl:
+          type: string
+        eocLink:
+          type: string
+        eoiLink:
+          type: string
+        targetedDeadline:
+          type: string
+        toBeSubmitted:
+          type: boolean
+        termsOfReference:
+          type: string
+        kpi:
+          type: string
+      required:
+        - activityTypeId
+        - description
+        - entityId
+        - evidenceInteraction
+        - evidenceControl
+        - termsOfReference
+        - frequency
+        - targetedDeadline
+        - toBeSubmitted
+        - deliverable
+    
+    EntityActivity:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        evidenceInteraction:
+          type: string
+        evidenceControl:
+          type: string
+        eocLink:
+          type: string
+        eoiLink:
+          type: string
+        targetedDeadline:
+          type: string
+        toBeSubmitted:
+          type: boolean
+        termsOfReference:
+          type: string
+        deliverable:
+          type: string
+        kpi:
+          type: string
+        activity:
+          $ref: '#/components/schemas/ActivityType'
+        entity:
+          $ref: '#/components/schemas/Program'   
+        frequency:
+          $ref: '#/components/schemas/Frequency'
+      required:
+        - activity
+        - description
+        - entity
+        - evidenceInteraction
+        - evidenceControl
+        - termsOfReference
+        - frequency
+        - targetedDeadline
+        - toBeSubmitted
+        - deliverable
+
+    EntityClosure:
+      type: object 
+      properties:
+        entityId:
+          type: number
+        period:
+          type: string
+        level:
+          type: number
+
+    EntityClosureDto:
+      type: object
+      properties:
+        month:
+          type: string
+        entity:
+          $ref: '#/components/schemas/Program'
+        level:
+          $ref: '#/components/schemas/UserLevel'
+        
+    MyAccountUpdateDto:
+      type: object
+      properties:
+        username:
+          type: string
+        givenName:
+          type: string
+        lastName:
+          type: string
+        mail:
+          type: string
+        password:
+          type: string
+
+    UserSchema:
+      type: object
+      properties:
+        username:
+          type: string
+        mail:
+          type: string
+        password:
+          type: string
+        level:
+          type: number
+        givenName:
+          type: string
+        lastName:
+          type: string
+        id:
+          type: number
+      required:
+        - username
+        - mail
+        - level
+
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+        username:
+          type: string
+        mail:
+          type: string
+        level:
+          type: number
+        givenName:
+          type: string
+        lastName:
+          type: string
+      required:
+        - username
+        - mail
+        - level
+        
+
+    Error:
+        type: object
+        properties:
+          code:
+            type: string
+            description: A number that indicates the error type that occurred.
+            minimum: 100
+            maximum: 600
+          message:
+            type: string
+            description: A descriptive message explaining the cause of error.
+        required:
+          - code
+          - message
+
+paths:
+  /login:
+    post:
+      tags:
+        - auth
+        - user
+      description: "User login"
+      summary: "User login"
+      operationId: "login"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              example:
+                username: super_admin
+                password: geheim
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  body:
+                    type: object
+                    properties:
+                      level:
+                        type: integer
+                      id:
+                        type: integer
+                      username:
+                        type: string
+                      givenName:
+                        type: string
+                      lastName:
+                        type: string
+                      mail:
+                        type: string
+                      token:
+                        type: string
+                        description: Token expires in 24hrs
+        401:
+          description: Invalid username
+        500:
+          description: Internal Server Error - Invalid password
+
+  /logout:
+    get:
+      tags:
+        - auth
+        - user
+      security:
+      - BearerAuth: []
+      description: "User logout"
+      summary: "User logout"
+      operationId: "logout"
+      responses:
+        200:
+          description: "OK"
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /user:
+    get:
+      tags:
+        - user
+      security:
+        - BearerAuth: []
+      description: "Get all users"
+      summary: "Get all users."
+      operationId: "getAllUsers"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+    post:
+      tags:
+        - user
+      security:
+        - BearerAuth: []
+      description: "Register user"
+      summary: "Register user."
+      operationId: "registerUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSchema'
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    properties:
+                      password:
+                        type: string
+                      active:
+                        type: boolean
+                      lastLogin:
+                        type: string
+                      createdOn:
+                        type: string
+        204:
+          description: "User created"
+        403:
+          description: User is not authorized to create new users
+        400:
+          description: Validation error message
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+    patch:
+      tags:
+        - user
+      security:
+        - BearerAuth: []
+      description: "Update user"
+      summary: "Update user."
+      operationId: "updateUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSchema'
+            example:
+              id: 145
+              username: "gl_test"
+              mail: "gltest@test.COM"
+              level: 1
+              givenName: "GLl"
+              lastName: "Test2"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    properties:
+                      password:
+                        type: string
+                      active:
+                        type: boolean
+                      lastLogin:
+                        type: string
+                      createdOn:
+                        type: string
+        403:
+          description: User is not authorized to create new users
+        400:
+          description: Validation error message
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /user/{userId}:
+    get:
+      tags:
+        - user
+      security:
+        - BearerAuth: []
+      summary: "Get User using userId."
+      description: "Get User using userId."
+      operationId: "getUser"
+      parameters:
+        # Paramter coin mentioned in the path
+        - name: userId
+          in: path
+          required: true
+          description: user id 
+          schema:
+            type: integer
+          example: 145
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  body:
+                    type: object
+                    $ref: '#/components/schemas/User'
+        404:
+          description: Corresponding user not found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    delete:
+      tags:
+        - user
+      security:
+        - BearerAuth: []
+      summary: "Delete a User using userId."
+      description: "Delete a User using userId."
+      operationId: "deleteUser"
+      parameters:
+        # Paramter coin mentioned in the path
+        - name: userId
+          in: path
+          required: true
+          description: user id 
+          schema:
+            type: integer
+          example: 108
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    properties:
+                      message: 
+                        type: string
+        403:
+          description: Forbidden - User is not authorized to remove users
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /user/current:
+    patch:
+      security:
+        - BearerAuth: []
+      tags:
+        - user
+      operationId: updateMyAccount
+      summary: "Update the current(logged in) User"
+      description: "Update the current(logged in) User"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyAccountUpdateDto'
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    
+              
+  /activity-types:
+    get:
+      tags:
+        - activity-type
+      security:
+        - BearerAuth: []
+      description: "Get all activity types"
+      summary: "Get all activity types"
+      operationId: "getActivityTypes"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  body:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActivityType'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+  /activity-type:
+    get:
+      tags:
+        - activity-type
+      security:
+        - BearerAuth: []
+      description: "Get an activity type using typeId"
+      summary: "Get a activity type using typeId"
+      operationId: "getActivityType"
+      parameters:
+        - name: typeId
+          in: query
+          required: true
+          description: Activity typeId to be retrieved
+          schema:
+            type: integer
+          example: 389
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityType'
+        400:
+          description: Bad Request - missing typeId
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+    post:
+      tags:
+        - activity-type
+      security:
+        - BearerAuth: []
+      description: "Create an activity type"
+      summary: "Create an activity type"
+      operationId: "postActivityType"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+            example:
+              name: Example Activity
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityType'
+        403:
+          description: Forbidden
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    delete:
+      tags:
+        - activity-type
+      security:
+        - BearerAuth: []
+      description: "Delete an activity type"
+      summary: "Delete an activity type"
+      operationId: "deleteActivityType"
+      parameters:
+        - in: query
+          name: typeId
+          required: true
+          description: Activity typeId to be deleted
+          schema:
+            type: integer
+          example: 389
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  body:
+                    allOf:
+                      - type: object
+                        properties:
+                          activityType:
+                            $ref: '#/components/schemas/ActivityType'
+                      - type: object
+                        properties:
+                          message: 
+                            type: object
+                            properties:
+                              raw:
+                                type: string
+                              affected:
+                                type: integer
+
+        400:
+          description: missing typeId
+        403:
+          description: Forbidden
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+        404:
+          description: Not Found
+    
+
+  /activity-type/{id}:
+    put:
+      tags:
+        - activity-type
+      security:
+        - BearerAuth: []
+      description: "Update an activity type"
+      summary: "Update an activity type"
+      operationId: "putActivityType"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Activity typeId to be Updated
+          schema:
+            type: integer
+          example: 389
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityType'
+        403:
+          description: Forbidden
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    
+  /activities:
+    get:
+      tags:
+        - activity
+      security:
+        - BearerAuth: []
+      description: "Get all activities"
+      summary: "Get all activities."
+      operationId: "getActivities"
+      parameters:
+        - name: entityId
+          in: query
+          required: false
+          description: Filter based on Entity Id
+          schema:
+            type: integer
+          example: 31
+        - name: activityTypeId
+          in: query
+          required: false
+          description: Filter based on Activity type Id
+          schema:
+            type: integer
+          example: 389
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/EntityActivity'
+                    - type: object
+                      properties:
+                        name: 
+                          type: string
+                        entityId:
+                          type: integer
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /activity:
+    get:
+      tags:
+        - activity
+      security:
+        - BearerAuth: []
+      description: "Get an activity using activityId"
+      summary: "Get an activity using activityId"
+      operationId: "getActivity"
+      parameters:
+        - name: activityId
+          in: query
+          required: false
+          description: Activity Id
+          schema:
+            type: string
+          example: 50c23e8a-d269-11eb-8699-0242ac1d0004
+        - name: related
+          in: query
+          required: false
+          description: updatesRepo
+          schema:
+            type: boolean
+          example: true
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EntityActivity'
+                  - type: object
+                    properties:
+                      plannedUpdates:
+                        type: array
+                        items:
+                          type: string
+                      name: 
+                        type: string
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+        400:
+          description: missing ID
+        404:
+          description: Not Found
+
+    post:
+      tags:
+        - activity
+      security:
+        - BearerAuth: []
+      description: "Create an activity"
+      summary: "Create an activity"
+      operationId: "putAndPostActivity"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityModel'
+            example:
+              plannedUpdates: 
+                - "2021/07"
+              activityTypeId: 393
+              entityId: 33
+              frequency: "annual"
+              deliverable: "string"
+              description: "string"
+              evidenceInteraction: "string"
+              evidenceControl: "string"
+              eocLink: "string"
+              eoiLink: "string"
+              targetedDeadline: "string"
+              toBeSubmitted: true
+              termsOfReference: "string"
+              kpi: "string"
+      responses:
+        201:
+          description: "Created"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EntityActivity'
+                  - type: object
+                    properties:
+                      plannedUpdates:
+                        type: array
+                        items:
+                          type: string
+        400:
+          description: Bad request, validation errors
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+    put:
+      tags:
+        - activity
+      security:
+        - BearerAuth: []
+      description: "Update an activity"
+      summary: "Update an activity"
+      operationId: "putAndPostActivity"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityModel'
+            example:
+              plannedUpdates: 
+                - "2021/07"
+              activityTypeId: 393
+              entityId: 33
+              frequency: "annual"
+              deliverable: "string"
+              description: "string"
+              evidenceInteraction: "string"
+              evidenceControl: "string"
+              eocLink: "string"
+              eoiLink: "string"
+              targetedDeadline: "string"
+              toBeSubmitted: true
+              termsOfReference: "string"
+              kpi: "string"
+      responses:
+        201:
+          description: "Created"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/EntityActivity'
+                  - type: object
+                    properties:
+                      plannedUpdates:
+                        type: array
+                        items:
+                          type: string
+        400:
+          description: Bad request, validation errors
+        403:
+          description: Forbidden
+        404:
+          description: Not Found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+        
+    delete:
+      tags:
+        - activity
+      security:
+        - BearerAuth: []
+      description: "Delete an activity"
+      summary: "Delete an activity"
+      operationId: "deleteActivity"
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: Activity Id
+          schema:
+            type: string
+          example: 50c23e8a-d269-11eb-8699-0242ac1d0004
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  body:
+                    allOf:
+                      - $ref: '#/components/schemas/EntityActivity'
+                      - type: object
+                        properties:
+                          message: 
+                            type: object
+                            properties:
+                              raw:
+                                type: string
+                              affected:
+                                type: integer
+        403:
+          description: Forbidden
+        400:
+          description: missing ID
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+  /entity:
+    get:
+      tags:
+        - entity
+      security:
+        - BearerAuth: []
+      description: "Get all entities or by Entity ID"
+      summary: "Get all entities or by Entity ID"
+      operationId: "getEntities"
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: Entity Id
+          schema:
+            type: integer
+          example: 19
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    $ref: '#/components/schemas/EntityDto'
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/EntityDto'
+        404:
+          description: Not Found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    post:
+      tags:
+        - entity
+      security:
+        - BearerAuth: []
+      description: "Create an entity"
+      summary: "Create an entity"
+      operationId: "createEntity"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntityDto'
+            example:
+              name: "X. QR xRs TB"
+              description: "Workplan for TB Quarterly Review xRs "
+              startDate: "2019-10-01"
+              endDate: "2023-12-31"
+              users: ["147", "148"]
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Program'
+                  - type: object
+                    properties:
+                      __userAssociations__:
+                        type: array
+                      __has_userAssociations__:
+                        type: boolean
+        400:
+          description: Bad Request - Validation Errors
+        403:
+          description: Forbidden
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    delete:
+      tags:
+        - entity
+      security:
+        - BearerAuth: []
+      description: "Delete an entity"
+      summary: "Delete an entity"
+      operationId: "deleteEntity"
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: Entity Id
+          schema:
+            type: integer
+          example: 51
+      responses:
+        200:
+          description: OK
+        403:
+          description: Forbidden
+        400:
+          description: missing ID
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /entity/{id}:
+    put:
+      tags:
+        - entity
+      security:
+        - BearerAuth: []
+      description: "Update an entity"
+      summary: "Update an entity"
+      operationId: "updateEntity"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Entity Id
+          schema:
+            type: integer
+          example: 19
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntityDto'
+            example:
+              name: "ZZZ - HHH (-2022)"
+              description: "A new Descriptions"
+              startDate: "2019-10-01"
+              endDate: "2023-12-31"
+              users: []
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Program'
+                  - type: object
+                    properties:
+                      __has_userAssociations__:
+                        type: boolean
+        403:
+          description: Forbidden
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /entity/users:
+    get:
+      tags:
+        - entity
+        - user
+      security:
+        - BearerAuth: []
+      description: "Get Associated Users of the entity"
+      summary: "Get Associated Users of the entity"
+      operationId: "getAssociatedUsers"
+      parameters:
+        - name: entityId
+          in: query
+          required: true
+          description: Entity Id
+          schema:
+            type: integer
+          example: 51
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: "array"
+                    items:
+                      $ref: '#/components/schemas/User'
+        400:
+          description: entityId required
+        404:
+          description: Not Found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    
+  /updates:
+    get:
+      tags:
+        - updates
+      security:
+        - BearerAuth: []
+      description: "Get Associated updates of the activity"
+      summary: "Get Associated updates of the activity"
+      operationId: "getUpdates"
+      parameters:
+        - name: activityId
+          in: query
+          required: true
+          description: Activity Id
+          schema:
+            type: string
+          example: 7f90605e-6a1b-11eb-814b-0242ac1d0002
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  body:
+                    type: "array"
+                    items:
+                      $ref: '#/components/schemas/Updates'
+        400:
+          description: Bad Request
+        404:
+          description: Not Found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /update:
+    post:
+      tags:
+        - updates
+      security:
+        - BearerAuth: []
+      description: "Create an update"
+      summary: "Create an update"
+      operationId: "postUpdate"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModel'
+            example:
+              activityId: "7f90605e-6a1b-11eb-814b-0242ac1d0002"
+              description: null
+              kpi: null
+              kpiStatus: null
+              date: "2023/10"
+              planned: false
+              milestone: null
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Updates'
+        400:
+          description: Bad Request
+        403:
+          description: Forbidden
+        401:
+          description: Unauthorized
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+    put:
+      tags:
+        - updates
+      security:
+        - BearerAuth: []
+      description: "Update an update"
+      summary: "Update an update"
+      operationId: "putUpdate"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModel'
+            example:
+              activityId: "7f90605e-6a1b-11eb-814b-0242ac1d0002"
+              description: "A new description"
+              kpi: null
+              kpiStatus: null
+              date: "2023/12"
+              planned: false
+              milestone: "Test"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Updates'
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+        401:
+          description: Unauthorized
+    delete:
+      tags:
+        - updates
+      security:
+        - BearerAuth: []
+      description: "Delete an update"
+      summary: "Delete an update"
+      operationId: "deleteUpdate"
+      parameters:
+        - name: updateId
+          in: query
+          required: true
+          description: Update Id
+          schema:
+            type: string
+          example: 7f90605e-6a1b-11eb-814b-0242ac1d0002
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  raw: 
+                    type: array
+                  affected: 
+                    type: integer
+        400:
+          description: Bad Request
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error
+        401:
+          description: Unauthorized
+          
+  /updates/{id}:
+    get:
+      tags:
+        - updates
+      security:
+        - BearerAuth: []
+      description: "Get update by ID"
+      summary: "Get update by ID"
+      operationId: "getUpdate"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Update Id
+          schema:
+            type: string
+          example: 7fa21d80-6a1b-11eb-814b-0242ac1d0002
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Updates'
+                  - type: object
+                    properties:
+                      nextUpdateId:
+                        type: string
+        404:
+          description: Not Found
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /update-content:
+    delete:
+      tags:
+        - updates
+      security:
+        - BearerAuth: []
+      description: "Delete Update Content"
+      summary: "Delete Update Content"
+      operationId: "deleteUpdateContent"
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: Update Id
+          schema:
+            type: array
+          example: 7fa21d80-6a1b-11eb-814b-0242ac1d0002
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Updates'
+        403:
+          description: Forbidden
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /overview:
+    get:
+      tags:
+        - updates
+        - activity
+        - entity
+      security:
+        - BearerAuth: []
+      description: "Get Overview"
+      summary: "Get Overview"
+      operationId: "getOverview"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Program'
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - type: object
+                      properties:
+                        entity:
+                          $ref: '#/components/schemas/Program'
+                    - type: object
+                      properties:
+                        activities:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Updates'         
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /addmilestone:
+    post:
+      tags:
+        - updates
+      security:
+        - BearerAuth: []
+      description: "Add Milestone to an update"
+      summary: "Add Milestone to an update"
+      operationId: "addMileStoneData"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateModel'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Updates'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /entity/{entityId}/closures:
+    get:
+      tags:
+        - entity
+        - month-closures
+      security:
+        - BearerAuth: []
+      description: "Get closures of an entity by entityId"
+      summary: "Get closures of an entity by entityId"
+      operationId: "getClosures"
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          description: Entity Id
+          schema:
+            type: integer
+          example: 19
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntityClosure'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    patch:
+      tags:
+        - entity
+        - month-closures
+      security:
+        - BearerAuth: []
+      description: "Update closures of an entity by entityId"
+      summary: "Update closures of an entity by entityId"
+      operationId: "patchClosures"
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          description: Entity Id
+          schema:
+            type: integer
+          example: 19
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              $ref: '#/components/schemas/MonthClosureDto'
+            example:
+              - period: "2027/01"
+                level: 1
+                closed: true
+      responses:
+        200:
+          description: OK
+        403:
+          description: Forbidden - You can only close periods at your own level | You are not associated with this entity 
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+  
+  /entity/{entityId}/closures/{period}/{level}:
+    get:
+      tags:
+        - entity
+        - month-closures
+      security:
+        - BearerAuth: []
+      description: "Get a particular closure by entityId, period and level"
+      summary: "Get a particular closure by entityId, period and level"
+      operationId: "getClosure"
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          description: Entity Id
+          schema:
+            type: integer
+          example: 34
+        - name: period
+          in: path
+          required: true
+          description: period
+          schema:
+            type: string
+          example: 2021/08
+        - name: level
+          in: path
+          required: true
+          description: level
+          schema:
+            type: integer
+          example: 1
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/EntityClosureDto'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+  
+  /open-month/first:
+    get:
+      tags:
+        - month-closures
+      security:
+        - BearerAuth: []
+      description: "Get First Open Month"
+      summary: "Get First Open Month"
+      operationId: "getFirstOpenMonth"
+      responses:
+        200:
+          description: OK
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /common/user-levels:
+    get:
+      tags:
+        - user
+        - common
+      security:
+        - BearerAuth: []
+      description: "Get User Levels"
+      summary: "Get User Levels"
+      operationId: "getUserLevels"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserLevel'
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+    
+  /entityupdate:
+    get:
+      tags:
+        - entity
+        - updates
+      security:
+        - BearerAuth: []
+      description: "Get Update for an Entity Id"
+      summary: "Get Update for an Entity Id"
+      operationId: "getUpdate"
+      parameters:
+        - name: entityId
+          in: query
+          required: true
+          description: Entity Id
+          schema:
+            type: integer
+          example: 34
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - type: object
+                      $ref: '#/components/schemas/EntityActivity'
+                    - type: object
+                      properties:
+                        updates:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Updates'  
+        404:
+          description: Not Found | No such activities
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
+
+  /export_entity_chart_excel:
+    get:
+      tags:
+        - export
+        - entity
+      security:
+        - BearerAuth: []
+      description: "Export excel by entity ID"
+      summary: "Export excel by entity ID"
+      operationId: "exportByEntity"
+      parameters:
+        - name: entityId
+          in: query
+          required: true
+          description: Entity Id
+          schema:
+            type: integer
+          example: 34
+      responses:
+        200:
+          description: OK - attachment; filename="workplan-details.xslx"
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: 
+                type: string
+                format: binary
+        400:
+          description: Bad Request
+        401:
+          description: Unauthorized
+        500:
+          description: Internal Server Error
