@@ -737,38 +737,33 @@ paths:
                     properties:
                       prescription_detail:
                         type: object
-                        name:
-                          type: string
-                        doctor_detail:
-                          type: object
-                          properties:
+                        properties:
+                          name:
+                            type: string
+                          doctor_detail:
+                            type: object
                             $ref: '#/components/schemas/doctor_detail'
-                        patient_detail:
-                          type: object
-                          properties:
+                          patient_detail:
+                            type: object
                             $ref: '#/components/schemas/patient_detail'
-                        pharmacy_detail:
-                          type: object
-                          properties:
+                          pharmacy_detail:
+                            type: object
                             $ref: '#/components/schemas/pharmacy_detail'
-                        delivery_detail:
-                          type: object
-                          properties:
+                          delivery_detail:
+                            type: object
                             $ref: '#/components/schemas/delivery_detail'
-                        medicines:
-                          type: array
-                          items:
+                          medicines:
+                            type: array
                             $ref: '#/components/schemas/medicine_detail'
-                        diagnosis:
-                          type: string
-                        custom_fee:
-                          type: object
-                          properties:
+                          diagnosis:
+                            type: string
+                          custom_fee:
+                            type: object
                             $ref: '#/components/schemas/custom_fee'
-                        bank_fee:
-                          type: integer
-                        token_id:
-                          type: string
+                          bank_fee:
+                            type: integer
+                          token_id:
+                            type: string
 
               example:
                 response_code: 1
