@@ -128,6 +128,92 @@ components:
           type: integer
         diagnosis:
           type: string
+    doctor_detail:
+      type: object
+      properties:
+        name: 
+          type: string
+        email:
+          type: string
+        phone: 
+          type: string
+        chamber:
+          type: string
+        address:
+          type: string
+        city: 
+          type: string
+        country: 
+          type: string
+        post_code: 
+          type: string
+        e_sig_id:
+          type: string
+    patient_detail:
+      type: object
+      properties:
+        name: 
+          type: string
+        age:
+          type: integer
+        dob: 
+          type: string
+        address:
+          type: string
+        city: 
+          type: string
+        country: 
+          type: string
+        post_code: 
+          type: string
+    pharmacy_detail:
+      type: object
+      properties:
+        name: 
+          type: string
+        address:
+          type: string
+        email: 
+          type: string
+        phone: 
+          type: string
+    custom_fee:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              fee:
+                type: integer
+    medicine_detail:
+      type: object
+      properties:
+        medicine_id: 
+          type: string
+        medicine_name:
+          type: string
+        dosage_instruction: 
+          type: string
+        pack:
+          type: integer
+        size:
+          type: string
+        Price:
+          type: integer
+    delivery_detail:
+      type: object
+      properties:
+        name: 
+          type: string
+        Price:
+          type: integer
+        address: 
+          type: string
+        email: 
+          type: string
+        phone: 
+          type: string
 
 paths:
   /sendCode:
@@ -632,3 +718,132 @@ paths:
                   fee: 20
               is_paid: 0
               diagnosis: dosage instruction
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: object
+                    properties:
+                      prescription_detail:
+                        type: object
+                        name:
+                          type: string
+                        doctor_detail:
+                          type: object
+                          properties:
+                            $ref: '#/components/schemas/doctor_detail'
+                        patient_detail:
+                          type: object
+                          properties:
+                            $ref: '#/components/schemas/patient_detail'
+                        pharmacy_detail:
+                          type: object
+                          properties:
+                            $ref: '#/components/schemas/pharmacy_detail'
+                        delivery_detail:
+                          type: object
+                          properties:
+                            $ref: '#/components/schemas/delivery_detail'
+                        medicines:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/medicine_detail'
+                        diagnosis:
+                          type: string
+                        custom_fee:
+                          type: object
+                          properties:
+                            $ref: '#/components/schemas/custom_fee'
+                        bank_fee:
+                          type: integer
+                        token_id:
+                          type: string
+
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data:
+                  prescription_detail:
+                    name: 17
+                    doctor_detail:
+                        name: 17
+                        email: doctor1@clynxx.uk
+                        phone: 03301138272
+                        chamber: Personal
+                        address: 90 Paul Street Shoreditch
+                        city: London
+                        country: UK
+                        post_code: EC2A 4NE
+                        e_sig_id: J$fdkljf()Udfsjfkljsdf
+                    patient_detail:
+                        name: Andy Test
+                        age : 29
+                        dob : 1990-01-01
+                        address: Test Address 1 Test Address 2
+                        city: Test
+                        country: Test Country
+                        post_code: NW3 2PT
+                    pharmacy_detail:
+                        name: Test Only ** CLYNXX
+                        address: 86-90 Paul Street
+                        email: ariroxltd@gmail.com
+                        phone: 03301138272
+                    delivery_detail:
+                        name: Standard  (UK & EU 48 - 72 hours)
+                        Price: 49
+                        address: 86-90 Paul Street
+                        email: ariroxltd@gmail.com
+                        phone: 03301138272
+                    medicines:
+                      - medicine_id: 53
+                        medicine_name: Able Spacer With Med
+                        dosage_instruction: my dosage instruction
+                        pack: 1
+                        size: 1
+                        price: 52
+                      - medicine_id: 59
+                        medicine_name: Abstral Tab 100Mcg 
+                        dosage_instruction: my dosage instruction
+                        pack: 2
+                        size: 10
+                        price: 70
+                    diagnosis: my personal
+                    custom_fee:
+                      - name: test 1
+                        fee: 20
+                    bank_fee: 10
+                    token_id: xyxasaskjf
+
+
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
