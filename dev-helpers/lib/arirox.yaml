@@ -847,3 +847,110 @@ paths:
                 messages: 
                   - error messages here
                 data: null
+              
+  /getGrandTotal:
+    post:
+      summary: This API will return the grand total of the prescription ( excluding tests prices ).
+      description: RxTransmission value can be either 1 or 2 indicating the following types. 1 = Direct to pharmacy 2= FreeRx
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+                token:
+                  type: string
+                rx_transmission: 
+                  type: integer
+                delivery_id:
+                  type: integer
+                pharmacy_id: 
+                  type: integer
+                medicines:
+                  $ref: '#/components/schemas/Medicine'
+                custom_fee:
+                  $ref: '#/components/schemas/custom_fee'
+            example:
+              email: some@example.com
+              token: 7KCiUkSLMh3b8sJwAzcf
+              rx_transmission: 1
+              delivery_id: 3
+              pharmacy_id: 8
+              medicines:
+                - medicine_id: 43
+                  packs: 2
+              custom_fee:
+                - name: test 1
+                  fee: 20
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: object
+                    properties:
+                      medicines:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Medicine'
+                      delivery_price:
+                        type: integer
+                      freerx_price:
+                        type: integer
+                      custom_fee:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/custom_fee'
+                      admin_price:
+                        type: integer
+                      grand_total:
+                        type: integer
+              example:
+                response_code: 1
+                messages: 
+                  - success messages here
+                data:
+                  medicines:
+                    - medicine_id: 1
+                      medicine_price: 50
+                      packs: 4
+                  delivery_price: 18
+                  freerx_price: 0
+                  custom_fee:
+                      - name: test 1
+                        fee: 20
+                  admin_price: 15
+                  grand_total: 83
+
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response_code:
+                    type: integer
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: string
+              example:
+                response_code: 0
+                messages: 
+                  - error messages here
+                data: null
