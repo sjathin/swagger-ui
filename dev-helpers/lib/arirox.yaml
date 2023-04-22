@@ -2,10 +2,10 @@ openapi: 3.0.0
 info:
   title: Clynxx APIs 2.0
   description: Version 2 of the Clynxx APIs uses primarily the POST method
-  version: 2.0.0
+  version: "2.0"
 servers:
   - url: https://clynxx.uk/index.php/apiv2/
-    description: Clynxx URL
+    description: APIv2 Clynxx URL
 
 components:
   schemas:
@@ -110,24 +110,39 @@ components:
           type: integer
         delivery_id:
           type: integer
+          description: Required if rx_transmission = 1
         pharmacy_id: 
           type: integer
+          description: Required if rx_transmission = 1
         medicines:
-          type: array
-          $ref: '#/components/schemas/Medicine'
-        custom_fee:
           type: array
           items:
             type: object
             properties:
-              name:
-                type: string
-              fee:
+              medicine_id: 
                 type: integer
+              dosage:
+                type: string
+              packs: 
+                type: integer
+                description: required if rx_transmission = 1
+              qty:
+                type: integer
+                description: required if rx_transmission = 1
+        custom_fee:
+          type: array
+          $ref: '#/components/schemas/custom_fee'
         is_paid:
           type: integer
         diagnosis:
           type: string
+      required:
+        - email
+        - token
+        - chamber_token
+        - patient_id
+        - medicines
+        - is_paid
     doctor_detail:
       type: object
       properties:
@@ -214,6 +229,22 @@ components:
           type: string
         phone: 
           type: string
+    ErrorObject:
+      type: object
+      properties:
+        response_code:
+          type: integer
+        messages:
+          type: array
+          items:
+            type: string
+        data:
+          type: string
+      example:
+        response_code: 0
+        messages: 
+          - error messages here
+        data: null
 
 paths:
   /sendCode:
@@ -254,27 +285,14 @@ paths:
                 messages: 
                   - success messages here
                 data: null
-
         500:
           description: If failed
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                          type: string
-                  data:
-                    type: string
-              example:
-                response_code: 0
-                messages: 
-                  - error messages here
-                data: null
+                $ref: '#/components/schemas/ErrorObject'
+              
+                
 
   /challengeCode:
     post:
@@ -324,21 +342,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                          type: string
-                  data:
-                    type: string
-              example:
-                response_code: 0
-                messages: 
-                  - error messages here
-                data: null
+                $ref: '#/components/schemas/ErrorObject'
 
   /addPatient:
     post:
@@ -359,10 +363,10 @@ paths:
                 city: city name
                 country: country name
                 post_code: UK 4535
-                phone: 0783242342
+                phone: "0783242342"
                 patient_email: someemail@abc.com
                 chamber_patient_id: Jelly007
-                country_code: 44
+                country_code: "44"
       responses:
         200:
           description: If successful
@@ -397,21 +401,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                          type: string
-                  data:
-                    type: string
-              example:
-                response_code: 0
-                messages: 
-                  - error messages here
-                data: null
+                $ref: '#/components/schemas/ErrorObject'
 
   /getMedicines:
     post:
@@ -468,21 +458,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                      type: string
-                  data:
-                    type: string
-              example:
-                response_code: 0
-                messages: 
-                  - error messages here
-                data: null
+                $ref: '#/components/schemas/ErrorObject'
 
   /getPrescriptionStatus:
     post:
@@ -534,21 +510,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                      type: string
-                  data:
-                    type: string
-              example:
-                response_code: 0
-                messages: 
-                  - error messages here
-                data: null
+                $ref: '#/components/schemas/ErrorObject'
 
   /getDeliveries:
     post:
@@ -590,7 +552,7 @@ paths:
                 messages: 
                   - success messages here
                 data:
-                  prescription:
+                  deliveries:
                     - id: 12
                       name: Standard $3 (UK & EU 48 - 72 hours)
                       price: 3
@@ -603,21 +565,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                      type: string
-                  data:
-                    type: string
-              example:
-                response_code: 0
-                messages: 
-                  - error messages here
-                data: null
+                $ref: '#/components/schemas/ErrorObject'
 
   /getCloserPharmacies:
     post:
@@ -676,6 +624,63 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorObject'
+              
+  /getGrandTotal:
+    post:
+      summary: This API will return the grand total of the prescription ( excluding tests prices ).
+      description: RxTransmission value can be either 1 or 2 indicating the following types. 1 = Direct to pharmacy 2= FreeRx
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: 
+                  type: string
+                token:
+                  type: string
+                rx_transmission: 
+                  type: integer
+                delivery_id:
+                  type: integer
+                  description: Required if rx_transmission = 1
+                pharmacy_id: 
+                  type: integer
+                  description: Required if rx_transmission = 1
+                medicines:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      medicine_id: 
+                        type: integer
+                      packs: 
+                        type: integer
+                custom_fee:
+                  $ref: '#/components/schemas/custom_fee'
+              required:
+                - token
+                - rx_transmission
+                - medicines
+            example:
+              email: some@example.com
+              token: 7KCiUkSLMh3b8sJwAzcf
+              rx_transmission: 1
+              delivery_id: 3
+              pharmacy_id: 8
+              medicines:
+                - medicine_id: 43
+                  packs: 2
+              custom_fee:
+                - name: test 1
+                  fee: 20
+      responses:
+        200:
+          description: If successful
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
                   response_code:
@@ -685,17 +690,58 @@ paths:
                     items:
                       type: string
                   data:
-                    type: string
+                    type: object
+                    properties:
+                      medicines:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            medicine_id: 
+                              type: integer
+                            medicine_price: 
+                              type: integer
+                            packs:
+                              type: integer
+                      delivery_price:
+                        type: integer
+                      freerx_price:
+                        type: integer
+                      custom_fee:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/custom_fee'
+                      admin_price:
+                        type: integer
+                      grand_total:
+                        type: integer
               example:
-                response_code: 0
+                response_code: 1
                 messages: 
-                  - error messages here
-                data: null
+                  - success messages here
+                data:
+                  medicines:
+                    - medicine_id: 1
+                      medicine_price: 50
+                      packs: 4
+                  delivery_price: 18
+                  freerx_price: 0
+                  custom_fee:
+                      - name: test 1
+                        fee: 20
+                  admin_price: 15
+                  grand_total: 83
+        500:
+          description: If failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
 
   /createPrescription:
     post:
       summary: This API will create the prescription and and electronic signature is applied
-      description: 1. This API has all the input parameters that are used in getGrandTotal API with addition parameters which are is_paid, diagnosis. <br> 2. Here medicines input also required “dosage” inside every object along with medicine_id & packs. <br> 3. RxTransmission value can be either 1 or 2 indicating the following types. <br> 1 = Direct to pharmacy 2= FreeRx
+      description: <br> 1. This API has all the input parameters that are used in getGrandTotal API with addition parameters which are is_paid, diagnosis. <br>2. Here medicines input also required “dosage” inside every object along with medicine_id & packs. <br>3. RxTransmission value can be either 1 or 2 indicating the following types. <br> 1 = Direct to pharmacy 2= FreeRx
       requestBody:
         content:
           application/json:
@@ -771,9 +817,9 @@ paths:
                   - success messages here
                 data:
                   prescription_detail:
-                    name: 17
+                    name: "17"
                     doctor_detail:
-                        name: 17
+                        name: "17"
                         email: doctor1@clynxx.uk
                         phone: 03301138272
                         chamber: Personal
@@ -802,17 +848,17 @@ paths:
                         email: ariroxltd@gmail.com
                         phone: 03301138272
                     medicines:
-                      - medicine_id: 53
+                      - medicine_id: "53"
                         medicine_name: Able Spacer With Med
                         dosage_instruction: my dosage instruction
                         pack: 1
-                        size: 1
+                        size: "1"
                         price: 52
-                      - medicine_id: 59
+                      - medicine_id: "59"
                         medicine_name: Abstral Tab 100Mcg 
                         dosage_instruction: my dosage instruction
                         pack: 2
-                        size: 10
+                        size: "10"
                         price: 70
                     diagnosis: my personal
                     custom_fee:
@@ -820,132 +866,9 @@ paths:
                         fee: 20
                     bank_fee: 10
                     token_id: xyxasaskjf
-
-
         500:
           description: If failed
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                      type: string
-                  data:
-                    type: string
-              example:
-                response_code: 0
-                messages: 
-                  - error messages here
-                data: null
-              
-  /getGrandTotal:
-    post:
-      summary: This API will return the grand total of the prescription ( excluding tests prices ).
-      description: RxTransmission value can be either 1 or 2 indicating the following types. 1 = Direct to pharmacy 2= FreeRx
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email: 
-                  type: string
-                token:
-                  type: string
-                rx_transmission: 
-                  type: integer
-                delivery_id:
-                  type: integer
-                pharmacy_id: 
-                  type: integer
-                medicines:
-                  $ref: '#/components/schemas/Medicine'
-                custom_fee:
-                  $ref: '#/components/schemas/custom_fee'
-            example:
-              email: some@example.com
-              token: 7KCiUkSLMh3b8sJwAzcf
-              rx_transmission: 1
-              delivery_id: 3
-              pharmacy_id: 8
-              medicines:
-                - medicine_id: 43
-                  packs: 2
-              custom_fee:
-                - name: test 1
-                  fee: 20
-      responses:
-        200:
-          description: If successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                      type: string
-                  data:
-                    type: object
-                    properties:
-                      medicines:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Medicine'
-                      delivery_price:
-                        type: integer
-                      freerx_price:
-                        type: integer
-                      custom_fee:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/custom_fee'
-                      admin_price:
-                        type: integer
-                      grand_total:
-                        type: integer
-              example:
-                response_code: 1
-                messages: 
-                  - success messages here
-                data:
-                  medicines:
-                    - medicine_id: 1
-                      medicine_price: 50
-                      packs: 4
-                  delivery_price: 18
-                  freerx_price: 0
-                  custom_fee:
-                      - name: test 1
-                        fee: 20
-                  admin_price: 15
-                  grand_total: 83
-
-        500:
-          description: If failed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  response_code:
-                    type: integer
-                  messages:
-                    type: array
-                    items:
-                      type: string
-                  data:
-                    type: string
-              example:
-                response_code: 0
-                messages: 
-                  - error messages here
-                data: null
+                $ref: '#/components/schemas/ErrorObject'
